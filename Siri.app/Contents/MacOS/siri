@@ -1,14 +1,14 @@
 #!/bin/bash
 #############################################################################
-# Mujo Launcher Script
+# Siri Launcher Script
 #############################################################################
 
 PROJECT_DIR="$HOME/activi-dev-repos/super-mac-assistant"
 
-# Terminal öffnen und Mujo starten
+# Terminal öffnen und Siri starten
 osascript -e "
 tell application \"Terminal\"
     activate
-    do script \"cd $PROJECT_DIR && source venv/bin/activate && python3 src/mujo_assistant.py\"
+    do script \"cd $PROJECT_DIR && source venv/bin/activate && python3 src/siri_assistant.py\"
 end tell
 "
