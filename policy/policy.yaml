@@ -1,0 +1,397 @@
+# Super Mac Assistant - Security Policy
+# This file is the SINGLE SOURCE OF TRUTH for all allowed actions
+# NO code may execute actions not defined here
+
+version: "2.0"
+last_updated: "2025-12-27"
+
+# =============================================================================
+# ALLOWLISTS (Enums - NO free strings!)
+# =============================================================================
+allowlists:
+  projects:
+    - "super-mac-assistant"
+    - "Optimizecodecloudagents"
+    - "nexus-ai-frontend"
+    - "backend-commands"
+
+  apps:
+    - "Visual Studio Code"
+    - "Google Chrome"
+    - "Slack"
+    - "Terminal"
+    - "Finder"
+
+  services:
+    - "backend"
+    - "frontend"
+    - "database"
+
+  agents:
+    - "emir"
+    - "planner"
+    - "berater"
+    - "designer"
+    - "coder"
+    - "tester"
+    - "security"
+    - "docs"
+
+  repos:
+    - "dsactivi-2/super-mac-assistant"
+    - "dsactivi-2/Optimizecodecloudagents"
+    - "dsactivi-2/nexus-ai"
+
+# =============================================================================
+# FINANCE GUARD (Hard Block)
+# =============================================================================
+finance_guard:
+  enabled: true
+
+  # Paths that must NEVER be accessed
+  deny_paths:
+    - "/Volumes/Finance"
+    - "/Users/dsselmanovic/Finance"
+    - "/Users/dsselmanovic/Documents/Finance"
+    - "~/Invoices"
+    - "~/Banking"
+
+  # Keywords that trigger block
+  deny_keywords:
+    - "invoice"
+    - "rechnung"
+    - "banking"
+    - "steuer"
+    - "tax"
+    - "payment"
+    - "paypal"
+    - "stripe"
+    - "bank"
+    - "iban"
+    - "sepa"
+
+  # Apps that must not be automated
+  deny_apps:
+    - "Banking"
+    - "Finance"
+    - "Lexoffice"
+    - "DATEV"
+
+  # Domains that must not be accessed
+  deny_domains:
+    - "paypal.com"
+    - "stripe.com"
+    - "banking.ing.de"
+    - "sparkasse.de"
+    - "lexoffice.de"
+
+# =============================================================================
+# ROOT PATHS (Allowed directories)
+# =============================================================================
+root_paths:
+  repos_root: "/Users/dsselmanovic/activi-dev-repos"
+  screenshots_root: "/Users/dsselmanovic/Desktop"
+  work_roots:
+    - "/Users/dsselmanovic/activi-dev-repos"
+    - "/Users/dsselmanovic/Documents/Work"
+  logs_root: "/Users/dsselmanovic/activi-dev-repos/super-mac-assistant/logs"
+
+# =============================================================================
+# RATE LIMITS (Per hour)
+# =============================================================================
+rate_limits:
+  screenshot: 20
+  create_task: 50
+  chat_message: 100
+  slack_notification: 30
+  github_issue: 10
+  git_push: 10
+  git_commit: 20
+  restart_service: 5
+
+# =============================================================================
+# CONFIRM GATE TTL (seconds)
+# =============================================================================
+confirm_ttl: 300  # 5 minutes
+
+# =============================================================================
+# ACTIONS REGISTRY
+# Risk Levels:
+#   0 = LOW      - Execute immediately (read-only, harmless)
+#   1 = MEDIUM   - Verbal confirm in voice UI (can disrupt work)
+#   2 = HIGH     - Explicit confirm gate + challenge (can modify data)
+#   3 = CRITICAL - ALWAYS DENIED (too dangerous)
+# =============================================================================
+actions:
+
+  # ---------------------------------------------------------------------------
+  # RISK 0 - Read-only, harmless
+  # ---------------------------------------------------------------------------
+
+  status_overview:
+    risk: 0
+    description: "Get system status overview"
+    args_schema: {}
+    returns: "JSON with backend status, agent mode, logs"
+
+  list_tasks:
+    risk: 0
+    description: "List tasks from backend"
+    args_schema:
+      status:
+        type: enum
+        values: ["pending", "in_progress", "completed", "all"]
+        optional: true
+    returns: "Array of tasks"
+
+  get_task_details:
+    risk: 0
+    description: "Get details of specific task"
+    args_schema:
+      task_id:
+        type: string
+        pattern: "^[a-f0-9-]{36}$"
+    returns: "Task object"
+
+  check_backend_health:
+    risk: 0
+    description: "Check if backend is healthy"
+    args_schema: {}
+    returns: "Health status JSON"
+
+  get_agent_mode:
+    risk: 0
+    description: "Get current agent mode (supervisor/assistant)"
+    args_schema: {}
+    returns: "Current agent type"
+
+  tail_log:
+    risk: 0
+    description: "Show last N lines from log file"
+    args_schema:
+      log_type:
+        type: enum
+        values: ["audit", "stdout", "stderr", "daemon"]
+      lines:
+        type: integer
+        min: 1
+        max: 500
+        default: 50
+    returns: "Log lines as text"
+
+  # ---------------------------------------------------------------------------
+  # RISK 1 - Can disrupt work, needs verbal confirm
+  # ---------------------------------------------------------------------------
+
+  take_screenshot:
+    risk: 1
+    description: "Take a screenshot and save to Desktop"
+    args_schema: {}
+    rate_limit: 20  # per hour
+    returns: "Screenshot file path"
+
+  open_app:
+    risk: 1
+    description: "Open a specific application"
+    args_schema:
+      app_name:
+        type: enum
+        values_from: allowlists.apps
+    returns: "Success status"
+
+  open_vscode_project:
+    risk: 1
+    description: "Open VS Code with specific project"
+    args_schema:
+      project:
+        type: enum
+        values_from: allowlists.projects
+    returns: "Success status"
+
+  create_task:
+    risk: 1
+    description: "Create task in backend"
+    args_schema:
+      title:
+        type: string
+        min_length: 3
+        max_length: 200
+      description:
+        type: string
+        max_length: 2000
+        optional: true
+      priority:
+        type: enum
+        values: ["low", "medium", "high"]
+        default: "medium"
+      assignee:
+        type: enum
+        values: ["cloud_assistant", "supervisor"]
+        default: "cloud_assistant"
+    rate_limit: 50
+    returns: "Task object with ID, STOP score"
+
+  send_chat_message:
+    risk: 1
+    description: "Send message to AI agent"
+    args_schema:
+      agent:
+        type: enum
+        values_from: allowlists.agents
+      message:
+        type: string
+        min_length: 1
+        max_length: 5000
+    rate_limit: 100
+    returns: "Agent response"
+
+  send_slack_notification:
+    risk: 1
+    description: "Send Slack notification as current agent"
+    args_schema:
+      message:
+        type: string
+        min_length: 1
+        max_length: 3000
+    rate_limit: 30
+    returns: "Message timestamp"
+
+  # ---------------------------------------------------------------------------
+  # RISK 2 - Can modify data, REQUIRES CONFIRM GATE
+  # ---------------------------------------------------------------------------
+
+  create_github_issue:
+    risk: 2
+    description: "Create GitHub issue"
+    args_schema:
+      repo:
+        type: enum
+        values_from: allowlists.repos
+      title:
+        type: string
+        min_length: 5
+        max_length: 200
+      body:
+        type: string
+        max_length: 10000
+        optional: true
+      labels:
+        type: array
+        items:
+          type: enum
+          values: ["bug", "feature", "enhancement", "documentation"]
+        optional: true
+    rate_limit: 10
+    requires_confirm: true
+    returns: "Issue URL and number"
+
+  git_commit:
+    risk: 2
+    description: "Create git commit in current repo"
+    args_schema:
+      message:
+        type: string
+        min_length: 10
+        max_length: 500
+      repo_path:
+        type: string
+        must_be_under: "repos_root"
+    rate_limit: 20
+    requires_confirm: true
+    returns: "Commit hash"
+
+  git_push:
+    risk: 2
+    description: "Push commits to remote"
+    args_schema:
+      repo_path:
+        type: string
+        must_be_under: "repos_root"
+      branch:
+        type: string
+        pattern: "^[a-zA-Z0-9/_-]+$"
+        optional: true
+    rate_limit: 10
+    requires_confirm: true
+    returns: "Push result"
+
+  restart_service:
+    risk: 2
+    description: "Restart a service"
+    args_schema:
+      service:
+        type: enum
+        values_from: allowlists.services
+    rate_limit: 5
+    requires_confirm: true
+    returns: "Service status"
+
+  sleep_mac:
+    risk: 2
+    description: "Put Mac to sleep"
+    args_schema: {}
+    requires_confirm: true
+    returns: "Success"
+
+  backup_now:
+    risk: 2
+    description: "Trigger Time Machine backup"
+    args_schema: {}
+    requires_confirm: true
+    returns: "Backup status"
+
+  # ---------------------------------------------------------------------------
+  # RISK 3 - ALWAYS DENIED (too dangerous)
+  # ---------------------------------------------------------------------------
+
+  run_shell_command:
+    risk: 3
+    description: "BLOCKED: Arbitrary shell commands"
+    deny_reason: "Free shell commands are forbidden"
+
+  delete_files:
+    risk: 3
+    description: "BLOCKED: File deletion"
+    deny_reason: "File deletion requires manual operation"
+
+  sudo_command:
+    risk: 3
+    description: "BLOCKED: Sudo operations"
+    deny_reason: "Elevated privileges forbidden"
+
+  modify_finance:
+    risk: 3
+    description: "BLOCKED: Any finance-related operation"
+    deny_reason: "Finance operations are technically and policy blocked"
+
+# =============================================================================
+# BACKUP POLICY
+# =============================================================================
+backup:
+  time_machine:
+    enabled: true
+    targets:
+      - "/Users/dsselmanovic/activi-dev-repos"
+      - "/Users/dsselmanovic/Documents/Work"
+    exclusions:
+      - "/Volumes/Finance"
+      - "**/node_modules"
+      - "**/.git/objects"
+      - "**/venv"
+
+  icloud:
+    enabled: true
+    sync_folders:
+      - "/Users/dsselmanovic/Documents/Work"
+    exclude_folders:
+      - "/Users/dsselmanovic/Finance"
+
+# =============================================================================
+# AUDIT CONFIG
+# =============================================================================
+audit:
+  log_all_requests: true
+  log_denied_actions: true
+  log_finance_guard_triggers: true
+  retention_days: 90
+  export_weekly_report: true

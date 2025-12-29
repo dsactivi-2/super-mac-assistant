@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.step2job.supermacassistant</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/dsselmanovic/activi-dev-repos/super-mac-assistant/venv/bin/python3</string>
+        <string>/Users/dsselmanovic/activi-dev-repos/super-mac-assistant/src/daemon.py</string>
+    </array>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/Users/dsselmanovic/activi-dev-repos/super-mac-assistant/logs/stdout.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/dsselmanovic/activi-dev-repos/super-mac-assistant/logs/stderr.log</string>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/dsselmanovic/activi-dev-repos/super-mac-assistant</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    </dict>
+</dict>
+</plist>
