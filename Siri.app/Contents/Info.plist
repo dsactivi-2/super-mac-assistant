@@ -3,13 +3,13 @@
 <plist version="1.0">
 <dict>
     <key>CFBundleExecutable</key>
-    <string>mujo</string>
+    <string>siri</string>
     <key>CFBundleIdentifier</key>
-    <string>com.step2job.mujo</string>
+    <string>com.step2job.siri</string>
     <key>CFBundleName</key>
-    <string>Mujo</string>
+    <string>Siri</string>
     <key>CFBundleDisplayName</key>
-    <string>Mujo Assistant</string>
+    <string>Siri Assistant</string>
     <key>CFBundleVersion</key>
     <string>1.0</string>
     <key>CFBundlePackageType</key>
@@ -17,8 +17,8 @@
     <key>LSMinimumSystemVersion</key>
     <string>10.15</string>
     <key>NSMicrophoneUsageDescription</key>
-    <string>Mujo braucht Mikrofonzugriff um auf "Hey Mujo" zu hören.</string>
+    <string>Siri braucht Mikrofonzugriff um auf "Siri" zu hören.</string>
     <key>NSSpeechRecognitionUsageDescription</key>
-    <string>Mujo nutzt Spracherkennung um deine Befehle zu verstehen.</string>
+    <string>Siri nutzt Spracherkennung um deine Befehle zu verstehen.</string>
 </dict>
 </plist>
