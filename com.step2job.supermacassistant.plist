@@ -8,7 +8,7 @@
     <key>ProgramArguments</key>
     <array>
         <string>/Users/dsselmanovic/activi-dev-repos/super-mac-assistant/venv/bin/python3</string>
-        <string>/Users/dsselmanovic/activi-dev-repos/super-mac-assistant/src/daemon.py</string>
+        <string>/Users/dsselmanovic/activi-dev-repos/super-mac-assistant/src/menu_bar_launcher.py</string>
     </array>
 
     <key>RunAtLoad</key>
