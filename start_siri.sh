@@ -1,16 +1,16 @@
 #!/bin/bash
 #############################################################################
-#  MUJO - Dein persönlicher Sprachassistent
+#  SIRI - Dein persönlicher Sprachassistent
 #############################################################################
 #
-#  Starte Mujo und sage "Hey Mujo" um ihn zu aktivieren
+#  Starte Siri und sage "Siri" um ihn zu aktivieren
 #
 #############################################################################
 
 echo ""
 echo "╔═══════════════════════════════════════════════════════════╗"
 echo "║                                                           ║"
-echo "║        🤖 MUJO - Sprachassistent                          ║"
+echo "║        🤖 SIRI - Sprachassistent                          ║"
 echo "║                                                           ║"
 echo "╚═══════════════════════════════════════════════════════════╝"
 echo ""
@@ -22,5 +22,5 @@ cd "$PROJECT_DIR"
 # Virtual Environment aktivieren
 source venv/bin/activate
 
-# Mujo starten
-python3 src/mujo_assistant.py
+# Siri starten
+python3 src/siri_assistant.py

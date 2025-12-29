@@ -1,79 +1,194 @@
 #!/usr/bin/env python3
 """
-Super Mac Assistant - Siri Integration
-Ermöglicht Sprachsteuerung über Siri Shortcuts
+SIRI - Dein persönlicher Sprachassistent
+=========================================
+
+Wecke ihn mit: "Siri"
+
+Dann stelle deine Frage und er antwortet dir.
 
 Verwendung:
-    python3 siri_assistant.py "Deine Frage hier"
-    python3 siri_assistant.py --agent coder "Wie erstelle ich eine REST API?"
+    python3 siri_assistant.py
+
+Autor: Super Mac Assistant Team
 """
 
 import sys
 import os
-import argparse
 import subprocess
+import threading
+import time
+import signal
 
-# Projektverzeichnis zum Path hinzufügen
+# Projektverzeichnis
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, PROJECT_DIR)
+
+try:
+    import speech_recognition as sr
+except ImportError:
+    print("❌ SpeechRecognition nicht installiert. Führe aus:")
+    print("   pip install SpeechRecognition pyaudio")
+    sys.exit(1)
 
 from src.api.backend_client import BackendAPIClient
 
 
 class SiriAssistant:
-    """Siri-kompatibler Assistent für Sprachbefehle"""
+    """
+    Siri - Dein persönlicher Coding-Assistent
+
+    Hört auf "Siri" und beantwortet Programmier-Fragen.
+    """
+
+    # Wake words die den Assistenten aktivieren
+    WAKE_WORDS = ["siri"]
+
+    # Stopp-Wörter zum Beenden
+    STOP_WORDS = ["stop", "beenden", "aufhören", "tschüss", "quit", "exit"]
 
     AGENTS = {
         "supervisor": "emir",
-        "emir": "emir",
+        "coder": "coder",
         "planner": "planner",
         "berater": "berater",
         "designer": "designer",
-        "coder": "coder",
         "tester": "tester",
         "security": "security",
         "docs": "docs"
     }
 
     def __init__(self):
+        self.recognizer = sr.Recognizer()
+        self.microphone = sr.Microphone()
         self.client = BackendAPIClient(
             base_url="http://localhost:3001",
             ws_url="ws://localhost:3001/ws"
         )
         self.current_agent = "emir"
+        self.running = False
+        self.listening_for_command = False
 
-    def speak(self, text: str):
+        # Mikrofonkalibrierung
+        print("🎤 Mikrofon wird kalibriert...")
+        with self.microphone as source:
+            self.recognizer.adjust_for_ambient_noise(source, duration=1)
+        print("✅ Mikrofon bereit!")
+
+    def speak(self, text: str, voice: str = "Anna"):
         """Text über macOS Sprachausgabe vorlesen"""
-        # Bereinige Text für Sprachausgabe
-        clean_text = text.replace('"', '\\"').replace("'", "\\'")
-        subprocess.run(["say", "-v", "Anna", clean_text], check=False)
+        try:
+            # Bereinige Text für Sprachausgabe
+            clean_text = str(text)
+            # Entferne problematische Zeichen
+            clean_text = clean_text.replace('"', ' ')
+            clean_text = clean_text.replace("'", ' ')
+            clean_text = clean_text.replace('`', ' ')
+            clean_text = clean_text.replace('\\', ' ')
+            clean_text = clean_text.replace('\n', '. ')
+            clean_text = clean_text.replace('\r', ' ')
+            # Kürze für Sprachausgabe
+            if len(clean_text) > 500:
+                clean_text = clean_text[:500] + "... und so weiter."
 
-    def ask(self, question: str, agent: str = None, speak_response: bool = True) -> str:
+            print(f"🔊 Spreche: {clean_text[:50]}...")
+            result = subprocess.run(
+                ["say", "-v", voice, clean_text],
+                capture_output=True,
+                text=True,
+                timeout=60
+            )
+            if result.returncode != 0:
+                print(f"⚠️ Say Fehler: {result.stderr}")
+        except Exception as e:
+            print(f"⚠️ Speak Fehler: {e}")
+
+    def listen(self, timeout: int = 5, phrase_limit: int = 10) -> str:
         """
-        Stelle eine Frage an den Assistenten
+        Höre auf Spracheingabe
 
         Args:
-            question: Die Frage/Anfrage
-            agent: Optional - welcher Agent antworten soll
-            speak_response: Ob die Antwort vorgelesen werden soll
+            timeout: Sekunden warten auf Sprache
+            phrase_limit: Max Sekunden für Phrase
 
         Returns:
-            Die Antwort als Text
+            Erkannter Text oder leerer String
         """
-        # Agent auswählen
-        if agent:
-            agent_name = self.AGENTS.get(agent.lower(), "emir")
-        else:
-            agent_name = self.current_agent
+        try:
+            with self.microphone as source:
+                audio = self.recognizer.listen(
+                    source,
+                    timeout=timeout,
+                    phrase_time_limit=phrase_limit
+                )
 
-        # Prüfe Backend-Verbindung
+            # Google Speech Recognition (kostenlos)
+            text = self.recognizer.recognize_google(audio, language="de-DE")
+            return text.lower()
+
+        except sr.WaitTimeoutError:
+            return ""
+        except sr.UnknownValueError:
+            return ""
+        except sr.RequestError as e:
+            print(f"⚠️  Spracherkennung nicht verfügbar: {e}")
+            return ""
+        except Exception as e:
+            print(f"⚠️  Fehler: {e}")
+            return ""
+
+    def check_wake_word(self, text: str) -> bool:
+        """Prüft ob ein Wake Word erkannt wurde"""
+        text_lower = text.lower()
+        for wake_word in self.WAKE_WORDS:
+            if wake_word in text_lower:
+                return True
+        return False
+
+    def check_stop_word(self, text: str) -> bool:
+        """Prüft ob ein Stopp-Wort erkannt wurde"""
+        text_lower = text.lower()
+        for stop_word in self.STOP_WORDS:
+            if stop_word in text_lower:
+                return True
+        return False
+
+    def extract_agent_from_text(self, text: str) -> tuple:
+        """
+        Extrahiert Agent aus Text
+        z.B. "frag den coder wie..." → ("coder", "wie...")
+        """
+        text_lower = text.lower()
+
+        agent_triggers = {
+            "coder": ["coder", "programmierer", "entwickler"],
+            "designer": ["designer", "design"],
+            "tester": ["tester", "test"],
+            "planner": ["planner", "planer", "planung"],
+            "berater": ["berater", "beratung", "experte"],
+            "security": ["security", "sicherheit"],
+            "docs": ["docs", "dokumentation", "doku"]
+        }
+
+        for agent, triggers in agent_triggers.items():
+            for trigger in triggers:
+                if trigger in text_lower:
+                    # Entferne den Trigger aus dem Text
+                    for t in triggers:
+                        text = text.lower().replace(f"frag den {t}", "")
+                        text = text.lower().replace(f"frage den {t}", "")
+                        text = text.lower().replace(t, "")
+                    return (agent, text.strip())
+
+        return (None, text)
+
+    def ask_backend(self, question: str, agent: str = None) -> str:
+        """Frage an das Backend senden"""
+        agent_name = agent if agent else self.current_agent
+
         if not self.client.connect():
-            error_msg = "Das Backend ist nicht erreichbar. Bitte starte zuerst den Server."
-            if speak_response:
-                self.speak(error_msg)
-            return error_msg
+            return "Das Backend ist leider nicht erreichbar. Bitte starte zuerst den Server."
 
-        # Sende Anfrage an Backend
         result = self.client.send_chat_message(
             message=question,
             agent_name=agent_name,
@@ -82,145 +197,143 @@ class SiriAssistant:
 
         if result.get("success"):
             data = result.get("data", {})
-            response = data.get("content") or data.get("response") or data.get("message", "Keine Antwort erhalten.")
-
-            # Kürze für Sprachausgabe (max 500 Zeichen)
-            if speak_response:
-                spoken_response = response[:500] + "..." if len(response) > 500 else response
-                self.speak(spoken_response)
-
-            return response
+            response = data.get("content") or data.get("response") or data.get("message")
+            return response if response else "Ich habe leider keine Antwort erhalten."
         else:
-            error_msg = f"Fehler: {result.get('error', 'Unbekannter Fehler')}"
-            if speak_response:
-                self.speak("Es ist ein Fehler aufgetreten.")
-            return error_msg
+            return f"Es gab einen Fehler: {result.get('error', 'Unbekannt')}"
 
-    def quick_action(self, action: str) -> str:
-        """
-        Führe eine Quick Action aus
+    def handle_command(self, text: str):
+        """Verarbeite einen Befehl nach dem Wake Word"""
+        print(f"📝 Befehl: {text}")
 
-        Actions:
-            - status: Aktueller Status
-            - tasks: Offene Aufgaben
-            - help: Hilfe anzeigen
-        """
-        if action == "status":
+        # Prüfe auf Stopp-Wort
+        if self.check_stop_word(text):
+            self.speak("Auf Wiedersehen! Bis bald.")
+            self.running = False
+            return
+
+        # Prüfe auf spezielle Befehle
+        if "status" in text.lower():
             if self.client.connect():
-                self.speak("Der Assistent ist bereit und das Backend ist verbunden.")
-                return "Status: Ready, Backend: Connected"
+                self.speak("Ich bin bereit und das Backend ist verbunden.")
             else:
                 self.speak("Das Backend ist nicht erreichbar.")
-                return "Status: Ready, Backend: Disconnected"
+            return
 
-        elif action == "tasks":
-            result = self.client.list_tasks()
-            if result.get("success"):
-                tasks = result.get("data", [])
-                if tasks:
-                    task_count = len(tasks)
-                    self.speak(f"Du hast {task_count} offene Aufgaben.")
-                    return f"{task_count} tasks: " + ", ".join([t.get("title", "Unbenannt") for t in tasks[:5]])
-                else:
-                    self.speak("Du hast keine offenen Aufgaben.")
-                    return "Keine offenen Aufgaben"
+        if "hilfe" in text.lower() or "help" in text.lower():
+            self.speak("""
+                Du kannst mich alles zur Programmierung fragen.
+                Zum Beispiel: Wie erstelle ich eine REST API?
+                Oder: Erkläre mir React Hooks.
+                Sage Stop oder Beenden um mich zu beenden.
+            """)
+            return
+
+        # Extrahiere Agent aus Text
+        agent, clean_text = self.extract_agent_from_text(text)
+
+        if not clean_text or len(clean_text) < 5:
+            self.speak("Was möchtest du wissen?")
+            print("👂 Warte auf Frage...")
+            follow_up = self.listen(timeout=8, phrase_limit=15)
+            if follow_up and len(follow_up) > 3:
+                clean_text = follow_up
             else:
-                self.speak("Konnte Aufgaben nicht abrufen.")
-                return "Fehler beim Abrufen der Aufgaben"
+                self.speak("Ich habe dich nicht verstanden.")
+                return
 
-        elif action == "help":
-            help_text = """
-Du kannst mich fragen:
-- Wie erstelle ich eine API?
-- Erkläre mir React Hooks
-- Hilf mir beim Debugging
-- Erstelle einen Unit Test
+        # Frage an Backend senden
+        self.speak("Moment, ich denke nach...")
+        response = self.ask_backend(clean_text, agent)
 
-Oder Quick Actions:
-- Status prüfen
-- Aufgaben anzeigen
-"""
-            self.speak("Ich kann dir bei der Programmierung helfen. Frag mich einfach was du wissen möchtest.")
-            return help_text
+        print(f"🤖 Antwort: {response[:200]}...")
+        self.speak(response)
 
-        else:
-            self.speak(f"Unbekannte Aktion: {action}")
-            return f"Unbekannte Aktion: {action}"
+    def run(self):
+        """Hauptschleife - lauscht auf Siri"""
+        self.running = True
 
-    def set_agent(self, agent: str) -> str:
-        """Wechsle den aktiven Agenten"""
-        agent_lower = agent.lower()
-        if agent_lower in self.AGENTS:
-            self.current_agent = self.AGENTS[agent_lower]
-            agent_names = {
-                "emir": "Supervisor Emir",
-                "planner": "Planner",
-                "berater": "Berater",
-                "designer": "Designer",
-                "coder": "Coder",
-                "tester": "Tester",
-                "security": "Security",
-                "docs": "Dokumentation"
-            }
-            name = agent_names.get(self.current_agent, self.current_agent)
-            self.speak(f"Agent gewechselt zu {name}")
-            return f"Agent: {name}"
-        else:
-            self.speak(f"Unbekannter Agent: {agent}")
-            return f"Unbekannter Agent: {agent}. Verfügbar: supervisor, planner, berater, designer, coder, tester, security, docs"
+        print("")
+        print("═" * 60)
+        print("  🤖 SIRI - Dein persönlicher Coding-Assistent")
+        print("═" * 60)
+        print("")
+        print("  Sage 'Siri' um mich zu aktivieren")
+        print("  Sage 'Stop' oder 'Beenden' um zu beenden")
+        print("")
+        print("  Beispiele:")
+        print("    • 'Siri, wie erstelle ich eine REST API?'")
+        print("    • 'Siri, erkläre mir React Hooks'")
+        print("    • 'Siri, frag den Coder wie schreibe ich einen Test'")
+        print("")
+        print("═" * 60)
+        print("")
+
+        self.speak("Hallo! Ich bin dein Coding-Assistent. Sage Siri wenn du mich brauchst.")
+
+        while self.running:
+            try:
+                # Lausche im Hintergrund
+                print("👂 Lausche... (sage 'Siri')")
+                text = self.listen(timeout=None, phrase_limit=15)
+
+                if not text:
+                    continue
+
+                print(f"🎤 Gehört: {text}")
+
+                # Prüfe auf Wake Word
+                if self.check_wake_word(text):
+                    # Entferne Wake Word aus Text
+                    command = text.lower()
+                    for wake_word in sorted(self.WAKE_WORDS, key=len, reverse=True):
+                        command = command.replace(wake_word, "")
+                    # Entferne auch "hey" falls übrig
+                    command = command.replace("hey", "").strip()
+                    # Entferne Satzzeichen am Anfang
+                    command = command.lstrip(",. ")
+
+                    if command and len(command) > 2:
+                        # Befehl wurde zusammen mit Wake Word gesagt
+                        self.handle_command(command)
+                    else:
+                        # Wake Word allein - warte auf Befehl
+                        self.speak("Ja? Was kann ich für dich tun?")
+                        print("👂 Warte auf Befehl...")
+
+                        command = self.listen(timeout=8, phrase_limit=15)
+                        if command:
+                            self.handle_command(command)
+                        else:
+                            self.speak("Ich habe dich nicht gehört.")
+
+                # Kurze Pause
+                time.sleep(0.1)
+
+            except KeyboardInterrupt:
+                print("\n👋 Beende...")
+                self.speak("Auf Wiedersehen!")
+                break
+            except Exception as e:
+                print(f"⚠️  Fehler: {e}")
+                time.sleep(1)
+
+        print("✅ Siri beendet.")
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Super Mac Assistant - Siri Integration")
-    parser.add_argument("question", nargs="*", help="Deine Frage oder Anfrage")
-    parser.add_argument("--agent", "-a", help="Agent auswählen (supervisor, coder, etc.)")
-    parser.add_argument("--action", help="Quick Action (status, tasks, help)")
-    parser.add_argument("--set-agent", help="Agent wechseln")
-    parser.add_argument("--no-speak", action="store_true", help="Keine Sprachausgabe")
+    """Hauptfunktion"""
+    # Signal Handler für sauberes Beenden
+    def signal_handler(sig, frame):
+        print("\n👋 Beende Siri...")
+        sys.exit(0)
 
-    args = parser.parse_args()
-    assistant = SiriAssistant()
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
 
-    # Quick Action
-    if args.action:
-        result = assistant.quick_action(args.action)
-        print(result)
-        return
-
-    # Agent wechseln
-    if args.set_agent:
-        result = assistant.set_agent(args.set_agent)
-        print(result)
-        return
-
-    # Frage stellen
-    if args.question:
-        question = " ".join(args.question)
-        result = assistant.ask(
-            question=question,
-            agent=args.agent,
-            speak_response=not args.no_speak
-        )
-        print(result)
-    else:
-        # Interaktiver Modus
-        assistant.speak("Hallo! Wie kann ich dir helfen?")
-        print("Super Mac Assistant - Siri Modus")
-        print("Tippe deine Frage oder 'exit' zum Beenden:")
-
-        while True:
-            try:
-                user_input = input("\n> ").strip()
-                if user_input.lower() in ["exit", "quit", "q"]:
-                    assistant.speak("Auf Wiedersehen!")
-                    break
-                if user_input:
-                    result = assistant.ask(user_input, speak_response=not args.no_speak)
-                    print(f"\n{result}")
-            except KeyboardInterrupt:
-                print("\n")
-                assistant.speak("Auf Wiedersehen!")
-                break
+    # Starte Siri
+    siri = SiriAssistant()
+    siri.run()
 
 
 if __name__ == "__main__":
