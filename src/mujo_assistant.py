@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-MUJO - Dein persönlicher Sprachassistent
+SIRI - Dein persönlicher Sprachassistent
 =========================================
 
-Wecke ihn mit: "Hey Mujo" oder "Mujo"
+Wecke ihn mit: "Siri"
 
 Dann stelle deine Frage und er antwortet dir.
 
@@ -36,9 +36,9 @@ from src.api.backend_client import BackendAPIClient
 
 class MujoAssistant:
     """
-    Mujo - Dein persönlicher Coding-Assistent
+    Siri - Dein persönlicher Coding-Assistent
 
-    Hört auf "Hey Mujo" und beantwortet Programmier-Fragen.
+    Hört auf "Siri" und beantwortet Programmier-Fragen.
     """
 
     # Wake words die den Assistenten aktivieren
@@ -258,23 +258,23 @@ class MujoAssistant:
         print("  🤖 SIRI - Dein persönlicher Coding-Assistent")
         print("═" * 60)
         print("")
-        print("  Sage 'Hey Siri' um mich zu aktivieren")
+        print("  Sage 'Siri' um mich zu aktivieren")
         print("  Sage 'Stop' oder 'Beenden' um zu beenden")
         print("")
         print("  Beispiele:")
-        print("    • 'Hey Siri, wie erstelle ich eine REST API?'")
+        print("    • 'Siri, wie erstelle ich eine REST API?'")
         print("    • 'Siri, erkläre mir React Hooks'")
-        print("    • 'Hey Siri, frag den Coder wie schreibe ich einen Test'")
+        print("    • 'Siri, frag den Coder wie schreibe ich einen Test'")
         print("")
         print("═" * 60)
         print("")
 
-        self.speak("Hallo! Ich bin dein Coding-Assistent. Sage Hey Siri wenn du mich brauchst.")
+        self.speak("Hallo! Ich bin dein Coding-Assistent. Sage Siri wenn du mich brauchst.")
 
         while self.running:
             try:
                 # Lausche im Hintergrund
-                print("👂 Lausche... (sage 'Hey Siri')")
+                print("👂 Lausche... (sage 'Siri')")
                 text = self.listen(timeout=None, phrase_limit=15)
 
                 if not text:
@@ -318,22 +318,22 @@ class MujoAssistant:
                 print(f"⚠️  Fehler: {e}")
                 time.sleep(1)
 
-        print("✅ Mujo beendet.")
+        print("✅ Siri beendet.")
 
 
 def main():
     """Hauptfunktion"""
     # Signal Handler für sauberes Beenden
     def signal_handler(sig, frame):
-        print("\n👋 Beende Mujo...")
+        print("\n👋 Beende Siri...")
         sys.exit(0)
 
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
 
-    # Starte Mujo
-    mujo = MujoAssistant()
-    mujo.run()
+    # Starte Siri
+    siri = MujoAssistant()
+    siri.run()
 
 
 if __name__ == "__main__":
