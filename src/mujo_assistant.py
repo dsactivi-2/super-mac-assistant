@@ -42,7 +42,7 @@ class MujoAssistant:
     """
 
     # Wake words die den Assistenten aktivieren
-    WAKE_WORDS = ["siri", "hey siri", "hei siri", "serie", "sir", "syria"]
+    WAKE_WORDS = ["siri"]
 
     # Stopp-Wörter zum Beenden
     STOP_WORDS = ["stop", "beenden", "aufhören", "tschüss", "quit", "exit"]
