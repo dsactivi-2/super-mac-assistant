@@ -1,0 +1,14 @@
+#!/bin/bash
+#############################################################################
+# Mujo Launcher Script
+#############################################################################
+
+PROJECT_DIR="$HOME/activi-dev-repos/super-mac-assistant"
+
+# Terminal öffnen und Mujo starten
+osascript -e "
+tell application \"Terminal\"
+    activate
+    do script \"cd $PROJECT_DIR && source venv/bin/activate && python3 src/mujo_assistant.py\"
+end tell
+"
