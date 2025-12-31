@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend-Backend Debugging Anleitung</title>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --card-bg: #161b22;
+            --border: #30363d;
+            --text: #c9d1d9;
+            --text-muted: #8b949e;
+            --accent: #58a6ff;
+            --success: #3fb950;
+            --warning: #d29922;
+            --error: #f85149;
+            --code-bg: #0d1117;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: var(--accent);
+        }
+        h2 {
+            font-size: 1.4rem;
+            margin: 2rem 0 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+        }
+        h3 {
+            font-size: 1.1rem;
+            margin: 1.5rem 0 0.5rem;
+            color: var(--text-muted);
+        }
+        .subtitle {
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        th, td {
+            text-align: left;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+        th { color: var(--text-muted); font-weight: 500; }
+        code {
+            background: var(--code-bg);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: var(--accent);
+        }
+        pre {
+            background: var(--code-bg);
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+            border: 1px solid var(--border);
+        }
+        pre code { padding: 0; background: none; }
+        .status-ok { color: var(--success); }
+        .status-warn { color: var(--warning); }
+        .status-error { color: var(--error); }
+        .kbd {
+            background: var(--border);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-family: monospace;
+        }
+        ul, ol { margin-left: 1.5rem; margin-bottom: 1rem; }
+        li { margin-bottom: 0.5rem; }
+        .checklist { list-style: none; margin-left: 0; }
+        .checklist li::before {
+            content: "[ ]";
+            margin-right: 0.5rem;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+        .tip {
+            background: rgba(88, 166, 255, 0.1);
+            border-left: 3px solid var(--accent);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; }
+        @media (max-width: 600px) {
+            body { padding: 1rem; }
+            h1 { font-size: 1.5rem; }
+            .card { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Frontend-Backend Debugging Anleitung</h1>
+        <p class="subtitle">Verbindungsprobleme zwischen Frontend und Backend mit Browser DevTools analysieren</p>
+
+        <h2>1. DevTools offnen</h2>
+        <div class="card">
+            <table>
+                <tr><th>Browser</th><th>Tastenkombination</th></tr>
+                <tr><td>Chrome/Edge</td><td><span class="kbd">F12</span> oder <span class="kbd">Strg + Shift + I</span></td></tr>
+                <tr><td>Firefox</td><td><span class="kbd">F12</span> oder <span class="kbd">Strg + Shift + I</span></td></tr>
+                <tr><td>Safari</td><td><span class="kbd">Cmd + Option + I</span> (erst in Einstellungen aktivieren)</td></tr>
+            </table>
+        </div>
+
+        <h2>2. Network Tab - API Requests analysieren</h2>
+        <div class="card">
+            <h3>Schritt-fur-Schritt:</h3>
+            <ol>
+                <li>Network Tab offnen (oben in DevTools)</li>
+                <li>Filter setzen: Klick auf <code>Fetch/XHR</code> (zeigt nur API-Calls)</li>
+                <li>Seite neu laden oder Aktion ausfuhren die fehlschlagt</li>
+                <li>Roten Request suchen = Fehler</li>
+            </ol>
+        </div>
+
+        <div class="card">
+            <h3>Status-Codes:</h3>
+            <table>
+                <tr><th>Status</th><th>Bedeutung</th><th>Losung</th></tr>
+                <tr><td class="status-ok">200</td><td>OK - Alles gut</td><td>-</td></tr>
+                <tr><td class="status-warn">301/302</td><td>Redirect</td><td>URL prufen</td></tr>
+                <tr><td class="status-error">400</td><td>Bad Request</td><td>Request-Body/Parameter prufen</td></tr>
+                <tr><td class="status-error">401</td><td>Nicht authentifiziert</td><td>Token/Login prufen</td></tr>
+                <tr><td class="status-error">403</td><td>Keine Berechtigung</td><td>Benutzerrechte prufen</td></tr>
+                <tr><td class="status-error">404</td><td>Endpoint nicht gefunden</td><td>URL/Route prufen</td></tr>
+                <tr><td class="status-error">500</td><td>Server-Fehler</td><td>Backend-Logs prufen</td></tr>
+                <tr><td class="status-error">502/503</td><td>Server nicht erreichbar</td><td>Server lauft?</td></tr>
+                <tr><td class="status-error">(failed)</td><td>Netzwerkfehler</td><td>Siehe CORS-Probleme</td></tr>
+            </table>
+        </div>
+
+        <h2>3. CORS-Fehler erkennen und beheben</h2>
+        <div class="card">
+            <h3>So erkennst du CORS-Probleme:</h3>
+            <ol>
+                <li>Console Tab offnen (neben Network)</li>
+                <li>Suche nach roter Meldung:</li>
+            </ol>
+            <pre><code>"Access to fetch at 'https://api.example.com' from origin
+'http://localhost:3000' has been blocked by CORS policy"</code></pre>
+
+            <h3>Was ist CORS?</h3>
+            <p>Browser blockieren Requests an andere Domains aus Sicherheitsgrunden.</p>
+            <pre><code>Frontend: http://localhost:3000
+Backend:  http://localhost:8000    &larr; Andere Port = Andere "Origin"
+                                   &larr; Browser blockiert!</code></pre>
+        </div>
+
+        <div class="card">
+            <h3>Losung im Backend:</h3>
+
+            <h4 style="margin-top:1rem;color:var(--accent)">Node.js/Express:</h4>
+            <pre><code>const cors = require('cors');
+app.use(cors({
+  origin: 'http://localhost:3000',  // Frontend URL
+  credentials: true
+}));</code></pre>
+
+            <h4 style="margin-top:1rem;color:var(--accent)">Django:</h4>
+            <pre><code># settings.py
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+]</code></pre>
+
+            <h4 style="margin-top:1rem;color:var(--accent)">FastAPI:</h4>
+            <pre><code>from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)</code></pre>
+        </div>
+
+        <h2>4. Request-Details analysieren</h2>
+        <div class="card">
+            <p>Klicke auf einen Request im Network Tab:</p>
+
+            <div class="grid" style="margin-top:1rem">
+                <div>
+                    <h4 style="color:var(--accent)">Headers Tab:</h4>
+                    <pre><code>Request URL:     https://api.example.com/users
+Request Method:  POST
+Status Code:     401 Unauthorized</code></pre>
+                    <p style="margin-top:0.5rem">&rarr; Prufe: Authorization Header vorhanden?</p>
+                </div>
+                <div>
+                    <h4 style="color:var(--accent)">Payload Tab:</h4>
+                    <pre><code>{
+  "username": "test",
+  "password": "***"
+}</code></pre>
+                    <p style="margin-top:0.5rem">&rarr; Prufe: Werden die richtigen Daten gesendet?</p>
+                </div>
+            </div>
+
+            <div class="grid" style="margin-top:1rem">
+                <div>
+                    <h4 style="color:var(--accent)">Response Tab:</h4>
+                    <pre><code>{
+  "error": "Invalid credentials"
+}</code></pre>
+                    <p style="margin-top:0.5rem">&rarr; Zeigt die Server-Antwort</p>
+                </div>
+                <div>
+                    <h4 style="color:var(--accent)">Preview Tab:</h4>
+                    <p>Formatierte Ansicht der Response (bei JSON)</p>
+                </div>
+            </div>
+        </div>
+
+        <h2>5. Haufige Probleme und Losungen</h2>
+
+        <div class="card">
+            <h3>Problem: Request wird gar nicht gesendet</h3>
+            <p><strong>Symptom:</strong> Kein Request im Network Tab sichtbar</p>
+            <p><strong>Ursachen:</strong></p>
+            <ul>
+                <li>JavaScript-Fehler vorher &rarr; Console Tab prufen</li>
+                <li>Event Handler nicht verbunden</li>
+                <li>Falscher Button/Form</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>Problem: "net::ERR_CONNECTION_REFUSED"</h3>
+            <p><strong>Symptom:</strong> Request failed, keine Response</p>
+            <p><strong>Ursachen:</strong></p>
+            <ul>
+                <li>Backend lauft nicht</li>
+                <li>Falsche URL/Port</li>
+                <li>Firewall blockiert</li>
+            </ul>
+            <p><strong>Prufen:</strong></p>
+            <pre><code># Lauft der Backend-Server?
+curl http://localhost:8000/health
+
+# Oder im Browser direkt aufrufen</code></pre>
+        </div>
+
+        <div class="card">
+            <h3>Problem: Request hangt (Pending)</h3>
+            <p><strong>Symptom:</strong> Request bleibt gelb, kein Status</p>
+            <p><strong>Ursachen:</strong></p>
+            <ul>
+                <li>Backend antwortet nicht (Timeout)</li>
+                <li>Endlosschleife im Backend</li>
+                <li>Datenbankverbindung blockiert</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>Problem: Falscher Content-Type</h3>
+            <p><strong>Symptom:</strong> 400 Bad Request, obwohl Daten korrekt</p>
+            <p><strong>Ursache:</strong> Server erwartet anderes Format</p>
+            <pre><code>// Falsch:
+fetch('/api/data', {
+  method: 'POST',
+  body: JSON.stringify(data)
+})
+
+// Richtig:
+fetch('/api/data', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'  // &larr; Das fehlt oft!
+  },
+  body: JSON.stringify(data)
+})</code></pre>
+        </div>
+
+        <h2>6. Console Tab - JavaScript Fehler</h2>
+        <div class="card">
+            <table>
+                <tr><th>Fehler</th><th>Bedeutung</th></tr>
+                <tr><td><code>TypeError: Cannot read property 'x' of undefined</code></td><td>Variable ist undefined</td></tr>
+                <tr><td><code>SyntaxError</code></td><td>Tippfehler im Code</td></tr>
+                <tr><td><code>ReferenceError: x is not defined</code></td><td>Variable existiert nicht</td></tr>
+                <tr><td><code>Uncaught (in promise)</code></td><td>Async-Fehler nicht behandelt</td></tr>
+            </table>
+            <div class="tip">
+                <strong>Tipp:</strong> Klicke auf den blauen Dateinamen rechts vom Fehler - DevTools springt zur Zeile im Code
+            </div>
+        </div>
+
+        <h2>7. Debugging Checkliste</h2>
+        <div class="card">
+            <p>Wenn API-Calls nicht funktionieren, prufe in dieser Reihenfolge:</p>
+            <ul class="checklist">
+                <li>1. Console Tab: JavaScript-Fehler vorhanden?</li>
+                <li>2. Network Tab: Request wurde gesendet?</li>
+                <li>3. Status Code: Was antwortet der Server?</li>
+                <li>4. CORS: Rote Meldung in Console?</li>
+                <li>5. URL korrekt? Tippfehler? Trailing Slash?</li>
+                <li>6. Headers: Authorization Token dabei?</li>
+                <li>7. Payload: Richtiges Format (JSON)?</li>
+                <li>8. Backend lauft? Prozess checken</li>
+                <li>9. Backend Logs: Fehler auf Server-Seite?</li>
+            </ul>
+        </div>
+
+        <h2>8. Nutzliche DevTools Features</h2>
+        <div class="card">
+            <div class="grid">
+                <div>
+                    <h4 style="color:var(--accent)">Preserve Log</h4>
+                    <p>Checkbox oben im Network Tab - Logs bleiben nach Seitennavigation erhalten</p>
+                </div>
+                <div>
+                    <h4 style="color:var(--accent)">Disable Cache</h4>
+                    <p>Checkbox oben im Network Tab - Erzwingt frische Requests</p>
+                </div>
+                <div>
+                    <h4 style="color:var(--accent)">Throttling</h4>
+                    <p>Dropdown "No throttling" &rarr; "Slow 3G" - Simuliert langsame Verbindung</p>
+                </div>
+                <div>
+                    <h4 style="color:var(--accent)">Copy as cURL</h4>
+                    <p>Rechtsklick auf Request &rarr; Request im Terminal testen</p>
+                </div>
+            </div>
+            <pre style="margin-top:1rem"><code># Eingefugter cURL-Befehl:
+curl 'https://api.example.com/users' \
+  -H 'Authorization: Bearer xxx' \
+  -H 'Content-Type: application/json' \
+  --data-raw '{"name":"test"}'</code></pre>
+        </div>
+
+        <div style="margin-top:3rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--text-muted);text-align:center">
+            activi-dev | Code Cloud Agents Debug Guide
+        </div>
+    </div>
+</body>
+</html>
