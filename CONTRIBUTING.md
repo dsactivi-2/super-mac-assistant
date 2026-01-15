@@ -9,11 +9,13 @@
 ## 🎯 Before You Start
 
 ### 1. Read Required Documentation
+
 - [ ] [SECURITY.md](./SECURITY.md) - Understand security model
 - [ ] [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) - Understand system design
 - [ ] [docs/POLICY_GUIDE.md](./docs/POLICY_GUIDE.md) - Understand policy.yaml
 
 ### 2. Ask These Questions
+
 1. **Is this action absolutely necessary?**
    - Principle: Minimize attack surface
    - Prefer read-only operations
@@ -41,23 +43,24 @@
 ```yaml
 actions:
   your_new_action:
-    risk: 1  # 0=low, 1=medium, 2=high, 3=blocked
+    risk: 1 # 0=low, 1=medium, 2=high, 3=blocked
     description: "Clear description of what it does"
     args_schema:
       arg_name:
-        type: enum  # Use enums, NOT free strings!
+        type: enum # Use enums, NOT free strings!
         values_from: allowlists.your_list
       another_arg:
         type: string
         min_length: 1
         max_length: 100
-        pattern: "^[a-zA-Z0-9_-]+$"  # Regex validation
-    rate_limit: 20  # Per hour
-    requires_confirm: false  # true for Risk 2
+        pattern: "^[a-zA-Z0-9_-]+$" # Regex validation
+    rate_limit: 20 # Per hour
+    requires_confirm: false # true for Risk 2
     returns: "What this action returns"
 ```
 
 **Risk Level Guidelines:**
+
 - **Risk 0 (LOW)**: Read-only, no side effects
   - Examples: get_status, list_tasks, check_health
   - Execute immediately
@@ -87,6 +90,7 @@ allowlists:
 ```
 
 **Rules:**
+
 - ✅ Explicit strings only
 - ❌ NO wildcards (`*`, `.*`)
 - ❌ NO path patterns (`**/*.txt`)
@@ -138,6 +142,7 @@ def _action_your_new_action(self, args: Dict) -> Dict:
 ```
 
 **Common Pitfalls:**
+
 - ❌ **DON'T** call LLM in executor
 - ❌ **DON'T** use free-form string arguments
 - ❌ **DON'T** access paths outside allowed roots
@@ -176,6 +181,7 @@ def test_your_action():
 ```
 
 **Required Tests:**
+
 1. ✅ Valid input succeeds
 2. ✅ Invalid input denied
 3. ✅ Edge cases handled
@@ -196,18 +202,21 @@ def test_your_action():
 Before submitting your change, verify:
 
 ### Input Validation
+
 - [ ] All inputs validated against schema (types, bounds, enums)
 - [ ] No free-form strings that could be code/commands
 - [ ] Paths validated (canonical, containment, no traversal)
 - [ ] No user input directly in shell commands
 
 ### Risk Assessment
+
 - [ ] Risk level correctly assigned
 - [ ] Rate limit set appropriately
 - [ ] Confirmation required if Risk 2
 - [ ] Not Risk 3 (if so, remove it!)
 
 ### FinanceGuard
+
 - [ ] Does NOT access finance paths
 - [ ] Does NOT use finance keywords
 - [ ] Does NOT open finance apps
@@ -215,6 +224,7 @@ Before submitting your change, verify:
 - [ ] If it might → add to deny lists
 
 ### Implementation
+
 - [ ] Deterministic (no LLM, no randomness in Role2)
 - [ ] Error handling present
 - [ ] Returns consistent format
@@ -222,6 +232,7 @@ Before submitting your change, verify:
 - [ ] Audit logged automatically (done by executor)
 
 ### Testing
+
 - [ ] Unit tests pass
 - [ ] Integration tests pass
 - [ ] Manual testing done
@@ -235,35 +246,39 @@ Before submitting your change, verify:
 ### ❌ Adding Free-Form String Arguments
 
 **BAD:**
+
 ```yaml
 create_file:
   args_schema:
     path:
-      type: string  # User can pass ANYTHING!
+      type: string # User can pass ANYTHING!
 ```
 
 **GOOD:**
+
 ```yaml
 create_file:
   args_schema:
     filename:
       type: string
-      pattern: "^[a-zA-Z0-9_-]+\\.txt$"  # Limited pattern
+      pattern: "^[a-zA-Z0-9_-]+\\.txt$" # Limited pattern
       max_length: 100
     directory:
       type: enum
-      values_from: allowlists.allowed_dirs  # From allowlist!
+      values_from: allowlists.allowed_dirs # From allowlist!
 ```
 
 ### ❌ Shell Command Injection
 
 **BAD:**
+
 ```python
 # NEVER DO THIS!
 subprocess.run(f"open {user_input}", shell=True)
 ```
 
 **GOOD:**
+
 ```python
 # Use list form, validate input first
 subprocess.run(['open', validated_path], shell=False)
@@ -272,6 +287,7 @@ subprocess.run(['open', validated_path], shell=False)
 ### ❌ Missing Error Handling
 
 **BAD:**
+
 ```python
 def _action_something(self, args):
     result = do_something(args['value'])  # Can throw!
@@ -279,6 +295,7 @@ def _action_something(self, args):
 ```
 
 **GOOD:**
+
 ```python
 def _action_something(self, args):
     try:
@@ -291,6 +308,7 @@ def _action_something(self, args):
 ### ❌ Calling LLM in Executor (Role2)
 
 **BAD:**
+
 ```python
 # In executor.py - WRONG!
 def _action_analyze(self, args):
@@ -298,6 +316,7 @@ def _action_analyze(self, args):
 ```
 
 **GOOD:**
+
 ```python
 # In researcher.py - CORRECT
 def analyze_with_llm(self, text):
@@ -311,21 +330,25 @@ def analyze_with_llm(self, text):
 
 ```markdown
 ## Description
+
 [Clear description of what this adds/changes]
 
 ## Type of Change
+
 - [ ] New action
 - [ ] Bug fix
 - [ ] Documentation
 - [ ] Security improvement
 
 ## Risk Assessment
+
 - Risk Level: [0/1/2/3]
 - Could this lead to data loss? [Yes/No - explain]
 - Could this be exploited via prompt injection? [Yes/No - explain]
 - Does this touch sensitive data? [Yes/No - explain]
 
 ## Checklist
+
 - [ ] Added to policy.yaml with correct risk level
 - [ ] Implemented in executor.py (deterministic)
 - [ ] Added tests (all passing)
@@ -335,9 +358,11 @@ def analyze_with_llm(self, text):
 - [ ] No secrets in code
 
 ## Testing
+
 [Describe how you tested this]
 
 ## Screenshots (if applicable)
+
 [Add screenshots of Siri usage, etc.]
 ```
 
@@ -348,16 +373,18 @@ def analyze_with_llm(self, text):
 ### Example 1: Adding "list_projects" (Low Risk)
 
 **1. policy.yaml:**
+
 ```yaml
 actions:
   list_projects:
-    risk: 0  # Read-only
+    risk: 0 # Read-only
     description: "List all projects in repos directory"
     args_schema: {}
     returns: "Array of project names"
 ```
 
 **2. executor.py:**
+
 ```python
 def _action_list_projects(self, args: Dict) -> Dict:
     """List all projects"""
@@ -382,6 +409,7 @@ def _action_list_projects(self, args: Dict) -> Dict:
 ### Example 2: Adding "open_browser_url" (Medium Risk)
 
 **1. Add to allowlists in policy.yaml:**
+
 ```yaml
 allowlists:
   allowed_domains:
@@ -391,10 +419,11 @@ allowlists:
 ```
 
 **2. Define action:**
+
 ```yaml
 actions:
   open_browser_url:
-    risk: 1  # Can disrupt work
+    risk: 1 # Can disrupt work
     description: "Open URL in default browser"
     args_schema:
       domain:
@@ -409,6 +438,7 @@ actions:
 ```
 
 **3. Implement:**
+
 ```python
 def _action_open_browser_url(self, args: Dict) -> Dict:
     """Open URL in browser"""

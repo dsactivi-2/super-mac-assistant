@@ -107,11 +107,13 @@ print(result)
 ### Problem: Daemon won't start
 
 **Symptoms:**
+
 - `launchctl load` fails
 - `ps aux | grep daemon.py` shows nothing
 - Siri shortcuts don't work
 
 **Diagnosis:**
+
 ```bash
 # Check LaunchAgent status
 launchctl list | grep supermacassistant
@@ -129,6 +131,7 @@ python3 src/daemon.py
 **Common Causes & Fixes:**
 
 1. **Python environment not activated**
+
    ```bash
    # Fix LaunchAgent to use venv python
    # Edit plist, change <ProgramArguments>
@@ -136,6 +139,7 @@ python3 src/daemon.py
    ```
 
 2. **Missing dependencies**
+
    ```bash
    cd ~/activi-dev-repos/super-mac-assistant
    source venv/bin/activate
@@ -143,6 +147,7 @@ python3 src/daemon.py
    ```
 
 3. **Kill switch is set to 'killed'**
+
    ```bash
    python3 src/security/kill_switch.py status
    # If killed:
@@ -160,11 +165,13 @@ python3 src/daemon.py
 ### Problem: Siri shortcuts don't work
 
 **Symptoms:**
+
 - Siri says "There was a problem with the app"
 - Shortcuts return error
 - Actions not executing
 
 **Diagnosis:**
+
 ```bash
 # 1. Check if daemon running
 ps aux | grep daemon.py
@@ -190,17 +197,20 @@ print(result)
 **Common Causes & Fixes:**
 
 1. **Daemon not running**
+
    ```bash
    launchctl load ~/Library/LaunchAgents/com.step2job.supermacassistant.plist
    ```
 
 2. **Backend not running**
+
    ```bash
    cd ~/activi-dev-repos/Optimizecodecloudagents
    npm run dev
    ```
 
 3. **Kill switch paused/killed**
+
    ```bash
    python3 src/security/kill_switch.py resume
    ```
@@ -217,11 +227,13 @@ print(result)
 ### Problem: Actions being denied unexpectedly
 
 **Symptoms:**
+
 - Actions return `"success": false`
 - Error says "denied" or "blocked"
 - Works sometimes, fails other times
 
 **Diagnosis:**
+
 ```bash
 # 1. Check audit log for denials
 python3 -c "
@@ -253,18 +265,21 @@ print(f\"Rate limit: {action_info.get('rate_limit', 'None')}\")
 **Common Causes & Fixes:**
 
 1. **Rate limit exceeded**
+
    ```bash
    # Wait 1 hour for rate limit to reset
    # OR increase limit in policy.yaml
    ```
 
 2. **Invalid argument**
+
    ```bash
    # Check args_schema in policy.yaml
    # Ensure using values from allowlists
    ```
 
 3. **FinanceGuard triggered**
+
    ```bash
    # Check if contains finance keywords/paths
    python3 -c "
@@ -289,11 +304,13 @@ print(f\"Rate limit: {action_info.get('rate_limit', 'None')}\")
 ### Problem: Backend connection failing
 
 **Symptoms:**
+
 - "Backend unreachable" errors
 - `check_backend_health` fails
 - Tasks/chat not working
 
 **Diagnosis:**
+
 ```bash
 # 1. Check if backend running
 curl http://localhost:3000/health
@@ -312,12 +329,14 @@ tail -f logs/server.log
 **Common Causes & Fixes:**
 
 1. **Backend not started**
+
    ```bash
    cd ~/activi-dev-repos/Optimizecodecloudagents
    npm run dev
    ```
 
 2. **Port conflict**
+
    ```bash
    # Kill process on port 3000
    lsof -i :3000
@@ -328,6 +347,7 @@ tail -f logs/server.log
    ```
 
 3. **Wrong URL configured**
+
    ```bash
    # Check environment variable
    echo $BACKEND_URL
@@ -337,6 +357,7 @@ tail -f logs/server.log
    ```
 
 4. **Backend crashed**
+
    ```bash
    # Check backend error logs
    tail -100 ~/activi-dev-repos/Optimizecodecloudagents/logs/error.log
@@ -348,11 +369,13 @@ tail -f logs/server.log
 ### Problem: Finance volume accidentally mounted
 
 **Symptoms:**
+
 - FinanceGuard reports `volume_mounted: true`
 - Security check fails
 - Finance access attempts logged
 
 **Immediate Action:**
+
 ```bash
 # 1. PAUSE system immediately
 python3 src/security/kill_switch.py pause
@@ -386,11 +409,13 @@ python3 src/security/kill_switch.py resume
 ### Problem: Audit logs growing too large
 
 **Symptoms:**
+
 - Disk space warnings
 - Slow log queries
 - Large logs directory
 
 **Diagnosis:**
+
 ```bash
 # Check size
 du -sh ~/activi-dev-repos/super-mac-assistant/logs/
@@ -403,6 +428,7 @@ ls -l ~/activi-dev-repos/super-mac-assistant/logs/audit/ | wc -l
 **Solutions:**
 
 1. **Compress old logs**
+
    ```bash
    cd ~/activi-dev-repos/super-mac-assistant/logs/audit
 
@@ -411,6 +437,7 @@ ls -l ~/activi-dev-repos/super-mac-assistant/logs/audit/ | wc -l
    ```
 
 2. **Delete old compressed logs**
+
    ```bash
    # Delete compressed logs older than 90 days (per policy)
    find . -name "audit_*.jsonl.gz" -mtime +90 -delete
@@ -420,7 +447,7 @@ ls -l ~/activi-dev-repos/super-mac-assistant/logs/audit/ | wc -l
    ```yaml
    # In policy.yaml
    audit:
-     retention_days: 60  # Reduce from 90
+     retention_days: 60 # Reduce from 90
    ```
 
 ---
@@ -430,16 +457,19 @@ ls -l ~/activi-dev-repos/super-mac-assistant/logs/audit/ | wc -l
 ### Workflow: Add a new allowed app
 
 **Steps:**
+
 1. Edit policy.yaml
+
    ```yaml
    allowlists:
      apps:
        - "Visual Studio Code"
        - "Google Chrome"
-       - "Your New App"  # Add here
+       - "Your New App" # Add here
    ```
 
 2. Restart daemon
+
    ```bash
    launchctl unload ~/Library/LaunchAgents/com.step2job.supermacassistant.plist
    launchctl load ~/Library/LaunchAgents/com.step2job.supermacassistant.plist
@@ -458,17 +488,21 @@ ls -l ~/activi-dev-repos/super-mac-assistant/logs/audit/ | wc -l
 ### Workflow: Investigate suspicious activity
 
 **Steps:**
+
 1. Pause system
+
    ```bash
    python3 src/security/kill_switch.py pause
    ```
 
 2. Review last 24h of audit logs
+
    ```bash
    python3 -c "from src.security.audit_log import AuditLogger; print(AuditLogger().export_report(hours=24))" > audit_review.txt
    ```
 
 3. Check security events
+
    ```bash
    python3 -c "
    from src.security.audit_log import AuditLogger
@@ -481,6 +515,7 @@ ls -l ~/activi-dev-repos/super-mac-assistant/logs/audit/ | wc -l
    ```
 
 4. Check FinanceGuard
+
    ```bash
    python3 -c "
    from src.security.finance_guard import FinanceGuard
@@ -492,6 +527,7 @@ ls -l ~/activi-dev-repos/super-mac-assistant/logs/audit/ | wc -l
    ```
 
 5. Decide: Resume or Kill
+
    ```bash
    # If safe:
    python3 src/security/kill_switch.py resume
@@ -503,17 +539,21 @@ ls -l ~/activi-dev-repos/super-mac-assistant/logs/audit/ | wc -l
 ### Workflow: Update policy.yaml safely
 
 **Steps:**
+
 1. Backup current policy
+
    ```bash
    cp policy/policy.yaml policy/policy.yaml.backup
    ```
 
 2. Edit policy.yaml
+
    ```bash
    vi policy/policy.yaml
    ```
 
 3. Validate syntax
+
    ```bash
    python3 -c "
    import yaml
@@ -525,11 +565,13 @@ ls -l ~/activi-dev-repos/super-mac-assistant/logs/audit/ | wc -l
    ```
 
 4. Test with validator
+
    ```bash
    python3 executor/validator.py
    ```
 
 5. Restart daemon
+
    ```bash
    launchctl unload ~/Library/LaunchAgents/com.step2job.supermacassistant.plist
    launchctl load ~/Library/LaunchAgents/com.step2job.supermacassistant.plist

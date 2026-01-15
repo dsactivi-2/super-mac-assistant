@@ -20,12 +20,14 @@
 ### Initial Setup
 
 **Prerequisites:**
+
 - macOS 11.0 or later
 - Python 3.8+
 - ANTHROPIC_API_KEY set in environment
 - Backend running on localhost:3000
 
 **Installation:**
+
 ```bash
 cd ~/activi-dev-repos/super-mac-assistant
 
@@ -41,6 +43,7 @@ chmod +x setup.sh
 ### Configuration
 
 **Environment Variables:**
+
 ```bash
 # Required
 export ANTHROPIC_API_KEY="sk-ant-..."
@@ -51,6 +54,7 @@ export BACKEND_WS_URL="ws://localhost:3000/ws"
 ```
 
 **Add to ~/.zshrc or ~/.bashrc:**
+
 ```bash
 # Super Mac Assistant
 export ANTHROPIC_API_KEY="sk-ant-..."
@@ -59,6 +63,7 @@ export ANTHROPIC_API_KEY="sk-ant-..."
 ### LaunchAgent Setup (Auto-Start)
 
 **Install:**
+
 ```bash
 # Copy plist
 cp launchd/com.step2job.supermacassistant.plist ~/Library/LaunchAgents/
@@ -71,6 +76,7 @@ launchctl list | grep supermacassistant
 ```
 
 **Uninstall:**
+
 ```bash
 # Unload
 launchctl unload ~/Library/LaunchAgents/com.step2job.supermacassistant.plist
@@ -86,11 +92,13 @@ rm ~/Library/LaunchAgents/com.step2job.supermacassistant.plist
 ### Start Daemon
 
 **Method 1: LaunchAgent (recommended)**
+
 ```bash
 launchctl load ~/Library/LaunchAgents/com.step2job.supermacassistant.plist
 ```
 
 **Method 2: Manual**
+
 ```bash
 cd ~/activi-dev-repos/super-mac-assistant
 source venv/bin/activate
@@ -100,16 +108,19 @@ python3 src/daemon.py &
 ### Stop Daemon
 
 **Method 1: LaunchAgent**
+
 ```bash
 launchctl unload ~/Library/LaunchAgents/com.step2job.supermacassistant.plist
 ```
 
 **Method 2: Kill Switch**
+
 ```bash
 python3 src/security/kill_switch.py kill
 ```
 
 **Method 3: Find and kill process**
+
 ```bash
 # Find PID
 ps aux | grep daemon.py
@@ -150,6 +161,7 @@ python3 src/security/kill_switch.py status
 ### Health Checks
 
 **Quick Health Check:**
+
 ```bash
 cd ~/activi-dev-repos/super-mac-assistant
 python3 -c "
@@ -164,6 +176,7 @@ print(result)
 ```
 
 **Expected Output:**
+
 ```json
 {
   "success": true,
@@ -177,6 +190,7 @@ print(result)
 ### Log Files
 
 **Locations:**
+
 ```
 ~/activi-dev-repos/super-mac-assistant/logs/
 ├── audit/
@@ -187,6 +201,7 @@ print(result)
 ```
 
 **View Audit Log:**
+
 ```bash
 # Last 50 lines
 python3 -c "
@@ -199,6 +214,7 @@ tail -50 ~/activi-dev-repos/super-mac-assistant/logs/audit/audit_$(date +%Y%m%d)
 ```
 
 **View Daemon Logs:**
+
 ```bash
 # Stdout
 tail -f ~/activi-dev-repos/super-mac-assistant/logs/stdout.log
@@ -210,18 +226,21 @@ tail -f ~/activi-dev-repos/super-mac-assistant/logs/stderr.log
 ### Metrics to Monitor
 
 **Daily Checks:**
+
 - [ ] Daemon is running
 - [ ] Backend is reachable
 - [ ] No error spikes in stderr.log
 - [ ] Audit log files being created
 
 **Weekly Checks:**
+
 - [ ] Review audit log report
 - [ ] Check disk space (logs grow)
 - [ ] Review security events
 - [ ] Check rate limiting stats
 
 **Commands:**
+
 ```bash
 # Disk space
 du -sh ~/activi-dev-repos/super-mac-assistant/logs/
@@ -249,6 +268,7 @@ for event in events[-10:]:  # Last 10
 ### Alerts
 
 **Set up alerts for:**
+
 1. **Security Events**: Any `type == 'security_event'` in audit log
 2. **Daemon Crashes**: Process not running
 3. **High Error Rate**: Many failed actions
@@ -256,12 +276,14 @@ for event in events[-10:]:  # Last 10
 5. **Disk Space**: Logs directory > 1GB
 
 **Example cron job for alerts:**
+
 ```bash
 # Check every hour
 0 * * * * /path/to/check_health.sh
 ```
 
 **check_health.sh:**
+
 ```bash
 #!/bin/bash
 cd ~/activi-dev-repos/super-mac-assistant
@@ -292,6 +314,7 @@ fi
 ### What to Backup
 
 **Critical Files:**
+
 ```
 ~/activi-dev-repos/super-mac-assistant/
 ├── policy/policy.yaml          # ⚠️ CRITICAL
@@ -303,16 +326,19 @@ fi
 ### Time Machine
 
 **Included (from policy.yaml):**
+
 - `/Users/dsselmanovic/activi-dev-repos` (including super-mac-assistant)
 - `/Users/dsselmanovic/Documents/Work`
 
 **Excluded:**
+
 - `/Volumes/Finance` (separate backup)
 - `**/node_modules`
 - `**/.git/objects`
 - `**/venv`
 
 **Trigger Backup:**
+
 ```bash
 # Immediate backup
 tmutil startbackup
@@ -327,9 +353,11 @@ tmutil status
 ### iCloud Sync
 
 **Enabled for:**
+
 - `/Users/dsselmanovic/Documents/Work`
 
 **Excluded:**
+
 - `/Users/dsselmanovic/Finance`
 
 ### Manual Backup
@@ -350,6 +378,7 @@ echo "Backup created: $BACKUP_DIR.tar.gz"
 ### Recovery
 
 **Restore from backup:**
+
 ```bash
 # Extract backup
 tar -xzf sma_backup_YYYYMMDD.tar.gz
@@ -374,6 +403,7 @@ See [INCIDENT_RESPONSE.md](./INCIDENT_RESPONSE.md) for detailed procedures.
 **Quick Reference:**
 
 ### Suspicious Activity
+
 ```bash
 # 1. PAUSE immediately
 python3 src/security/kill_switch.py pause
@@ -396,6 +426,7 @@ python3 src/security/kill_switch.py resume  # or kill
 ```
 
 ### Daemon Crash
+
 ```bash
 # 1. Check logs
 tail -100 ~/activi-dev-repos/super-mac-assistant/logs/stderr.log
@@ -409,6 +440,7 @@ launchctl load ~/Library/LaunchAgents/com.step2job.supermacassistant.plist
 ```
 
 ### Finance Access Attempt
+
 ```bash
 # 1. Check FinanceGuard status
 python3 -c "
@@ -442,6 +474,7 @@ print(result)
 ### Weekly Tasks
 
 **1. Audit Log Review** (15 min)
+
 ```bash
 # Generate weekly report
 python3 -c "
@@ -456,6 +489,7 @@ print(AuditLogger().export_report(hours=168))
 ```
 
 **2. Log Rotation** (5 min)
+
 ```bash
 # Compress old audit logs
 cd ~/activi-dev-repos/super-mac-assistant/logs/audit
@@ -466,6 +500,7 @@ find . -name "audit_*.jsonl.gz" -mtime +90 -delete
 ```
 
 **3. Update Check** (5 min)
+
 ```bash
 cd ~/activi-dev-repos/super-mac-assistant
 git fetch
@@ -480,6 +515,7 @@ git status
 ### Monthly Tasks
 
 **1. Security Review** (30 min)
+
 - Review all security events
 - Check FinanceGuard logs
 - Verify backups working
@@ -487,6 +523,7 @@ git status
 - Review policy.yaml for needed changes
 
 **2. Cleanup** (15 min)
+
 ```bash
 # Clear old logs
 find ~/activi-dev-repos/super-mac-assistant/logs -name "*.log" -mtime +30 -delete
@@ -498,12 +535,14 @@ du -sh ~/activi-dev-repos/super-mac-assistant/logs/
 ### Quarterly Tasks
 
 **1. Penetration Test** (60 min)
+
 - Try to bypass FinanceGuard
 - Test prompt injection resistance
 - Verify rate limits work
 - Test all risk levels
 
 **2. Dependency Updates** (30 min)
+
 ```bash
 cd ~/activi-dev-repos/super-mac-assistant
 source venv/bin/activate

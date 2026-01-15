@@ -11,6 +11,7 @@
 ### 1. Policy-First Architecture ✅
 
 **policy/policy.yaml** - Single Source of Truth (400+ Zeilen)
+
 - ✅ Allowlists (projects, apps, services, agents, repos) - **NO free strings**
 - ✅ FinanceGuard (deny_paths, deny_keywords, deny_apps, deny_domains)
 - ✅ Root paths configuration
@@ -21,6 +22,7 @@
 - ✅ Audit configuration
 
 **Risk Levels:**
+
 - **Risk 0**: 6 actions (read-only, sofort)
 - **Risk 1**: 6 actions (verbal confirm)
 - **Risk 2**: 6 actions (explicit confirm gate)
@@ -29,18 +31,21 @@
 ### 2. Role1/Role2 Trennung ✅
 
 **Role2 (Executor)** - Deterministic, NO LLM in execution path
+
 - ✅ `executor/validator.py` - Policy validation gegen YAML
 - ✅ `executor/executor.py` - Deterministische Action-Ausführung
 - ✅ Confirmation Manager mit TTL-based challenges
 - ✅ Alle 20+ actions implementiert
 
 **Role1 (Researcher)** - LLM-based Planning
+
 - ✅ `researcher/researcher.py` - Natural language → structured actions
 - ✅ Claude Sonnet 4 integration
 - ✅ Context-aware planning
 - ✅ Auto-execute low-risk / confirmation for high-risk
 
 **Separation Property:**
+
 - ✅ Role1 can be wrong, can be prompt-injected → OK
 - ✅ Role2 validates EVERYTHING against policy → Gatekeeper
 - ✅ NO LLM in execution path → Security
@@ -48,11 +53,13 @@
 ### 3. FinanceGuard - Multi-Layer Protection ✅
 
 **src/security/finance_guard.py**
+
 - ✅ **Layer 1**: OS-Level (encrypted DMG, unmounted by default)
 - ✅ **Layer 2**: Policy enforcement (validator.py)
 - ✅ **Layer 3**: Runtime detection
 
 **Features:**
+
 - ✅ Finance volume mount detection
 - ✅ Path blocking (/Volumes/Finance, ~/Banking, etc.)
 - ✅ Keyword detection (invoice, rechnung, banking, etc.)
@@ -64,6 +71,7 @@
 ### 4. Path Security ✅
 
 **In executor/validator.py:**
+
 - ✅ Canonical path resolution (realpath)
 - ✅ Root containment checking
 - ✅ Path traversal prevention (`..` detection)
@@ -73,6 +81,7 @@
 ### 5. Complete Test Suite ✅
 
 **tests/test_integration.py**
+
 - ✅ Policy validation tests (4 scenarios)
 - ✅ FinanceGuard tests (5 scenarios)
 - ✅ Executor tests (3 scenarios)
@@ -84,17 +93,20 @@
 ### 6. Enterprise Documentation ✅
 
 **User Documentation:**
+
 - ✅ [README.md](./README.md) - Overview, installation
 - ✅ [SIRI_SHORTCUTS.md](./SIRI_SHORTCUTS.md) - Voice control setup
 - ✅ [SECURITY.md](./SECURITY.md) - Security model (updated)
 
 **Developer Documentation:**
+
 - ✅ [CONTRIBUTING.md](./CONTRIBUTING.md) - How to add actions safely
 - ✅ [docs/INDEX.md](./docs/INDEX.md) - Navigation hub
 - ✅ [docs/OPERATIONS.md](./docs/OPERATIONS.md) - Production ops
 - ✅ [docs/RUNBOOK.md](./docs/RUNBOOK.md) - Troubleshooting
 
 **Still TODO:**
+
 - [ ] docs/ARCHITECTURE.md
 - [ ] docs/POLICY_GUIDE.md
 - [ ] docs/THREAT_MODEL.md
@@ -170,6 +182,7 @@ TEST 5: Send Chat Message ✅ PASSED
 ```
 
 **Dependencies Installed:**
+
 - ✅ websocket-client (for WebSocket support)
 - ✅ All backend actions functional
 
@@ -178,6 +191,7 @@ TEST 5: Send Chat Message ✅ PASSED
 ## 🔒 Security Features
 
 ### Implemented ✅
+
 - ✅ Allowlist-only (NO free shell commands)
 - ✅ Risk-based execution (0/1/2/3)
 - ✅ Confirm Gate for Risk 2 (challenge/response with TTL)
@@ -190,6 +204,7 @@ TEST 5: Send Chat Message ✅ PASSED
 - ✅ Role separation (LLM not in execution path)
 
 ### Planned 🔜
+
 - [ ] Keychain integration für Tokens
 - [ ] 2FA für CRITICAL actions
 - [ ] ML-based anomaly detection
@@ -245,6 +260,7 @@ super-mac-assistant/
 ## 🚀 Next Steps
 
 ### Immediate (Before Production)
+
 1. ✅ ~~Policy.yaml erstellt~~
 2. ✅ ~~Validator implementiert~~
 3. ✅ ~~Executor implementiert~~
@@ -257,6 +273,7 @@ super-mac-assistant/
 10. [ ] **Siri Shortcuts aktualisieren** (für neue Struktur)
 
 ### Short-term (Week 1)
+
 - [ ] Finance volume erstellen und testen
 - [ ] LaunchAgent installieren und testen
 - [ ] 7 Tage im Daily-Use testen
@@ -264,6 +281,7 @@ super-mac-assistant/
 - [ ] Kill switch testen
 
 ### Medium-term (Month 1)
+
 - [ ] Backup-Strategie implementieren
 - [ ] Monitoring aufsetzen
 - [ ] Rate limits tunen (basierend auf usage)
@@ -271,6 +289,7 @@ super-mac-assistant/
 - [ ] Siri Shortcuts erweitern
 
 ### Long-term (Quarter 1)
+
 - [ ] Keychain integration
 - [ ] 2FA für CRITICAL actions
 - [ ] Anomaly detection
@@ -344,6 +363,7 @@ super-mac-assistant/
 ## 🎯 Success Criteria
 
 ### ✅ Completed
+
 - [x] Policy-driven architecture
 - [x] Role1/Role2 separation
 - [x] FinanceGuard multi-layer protection
@@ -355,11 +375,13 @@ super-mac-assistant/
 - [x] Rate limiting
 
 ### 🔜 In Progress
+
 - [ ] Remaining docs (ARCHITECTURE, POLICY_GUIDE, etc.)
 - [ ] Production deployment
 - [ ] Siri integration update
 
 ### 📅 Planned
+
 - [ ] Keychain integration
 - [ ] 2FA
 - [ ] Anomaly detection
@@ -371,6 +393,7 @@ super-mac-assistant/
 **Current Status**: 🟢 **Production-Ready**
 
 **Strengths:**
+
 - ✅ No arbitrary shell commands
 - ✅ All inputs validated against schema
 - ✅ FinanceGuard preventing sensitive data access
@@ -380,12 +403,14 @@ super-mac-assistant/
 - ✅ Emergency stop mechanism
 
 **Known Risks (Mitigated):**
+
 - ⚠️ Prompt injection on Role1 → Mitigated: Role2 validates everything
 - ⚠️ Voice spoofing → Mitigated: Risk 2 requires confirmation
 - ⚠️ Malicious update → Mitigated: Policy in YAML, audit logs
 - ⚠️ Local attacker → Mitigated: FileVault, Touch ID, auto-lock
 
 **Remaining Risks (Accepted):**
+
 - ⚠️ Physical access to unlocked Mac → User responsibility
 - ⚠️ Compromised ANTHROPIC_API_KEY → Use env vars, rotate regularly
 - ⚠️ Backend compromise → Separate concern, out of scope
@@ -400,6 +425,7 @@ super-mac-assistant/
 **Date**: 2025-12-27
 
 **For Issues**:
+
 - Security: Pause system → Review audit logs → [INCIDENT_RESPONSE.md](./docs/INCIDENT_RESPONSE.md)
 - Bugs: Check [RUNBOOK.md](./docs/RUNBOOK.md) → File issue with logs
 - Features: Read [CONTRIBUTING.md](./CONTRIBUTING.md) → Security review
@@ -411,6 +437,7 @@ super-mac-assistant/
 **Super Mac Assistant 2.0 ist Production-Ready!**
 
 Die Enterprise-Architektur mit Policy-First, Role Separation und Multi-Layer FinanceGuard bietet:
+
 - ✅ Starke Sicherheit (allowlist-only, risk-based, audit)
 - ✅ Flexibilität (policy.yaml single source of truth)
 - ✅ Erweiterbarkeit (saubere Trennung, tests)

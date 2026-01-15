@@ -10,18 +10,18 @@ supermac.menubar.{section}.{element}
 
 ## Menu Bar App IDs
 
-| ID | Element | Keyboard Shortcut | Description |
-|----|---------|-------------------|-------------|
-| `supermac.menubar.status.display` | Status Text | - | Shows current status (Ready/Error) |
-| `supermac.menubar.agent.supervisor` | Switch to Supervisor | ⌘1 | Activate Supervisor mode |
-| `supermac.menubar.agent.assistant` | Switch to Assistant | ⌘2 | Activate Assistant mode |
-| `supermac.menubar.agent.current` | Current Agent | - | Displays active agent name |
-| `supermac.menubar.action.screenshot` | Take Screenshot | ⌘S | Capture screen to Desktop |
-| `supermac.menubar.action.status` | Check Status | ⌘C | Show detailed status notification |
-| `supermac.menubar.backend.status` | Backend Status | - | Shows connection status |
-| `supermac.menubar.backend.reconnect` | Reconnect | ⌘R | Attempt backend reconnection |
-| `supermac.menubar.slack.toggle` | Notifications Toggle | ⌘N | Enable/disable Slack notifications |
-| `supermac.menubar.app.quit` | Quit | ⌘Q | Exit the application |
+| ID                                   | Element              | Keyboard Shortcut | Description                        |
+| ------------------------------------ | -------------------- | ----------------- | ---------------------------------- |
+| `supermac.menubar.status.display`    | Status Text          | -                 | Shows current status (Ready/Error) |
+| `supermac.menubar.agent.supervisor`  | Switch to Supervisor | ⌘1                | Activate Supervisor mode           |
+| `supermac.menubar.agent.assistant`   | Switch to Assistant  | ⌘2                | Activate Assistant mode            |
+| `supermac.menubar.agent.current`     | Current Agent        | -                 | Displays active agent name         |
+| `supermac.menubar.action.screenshot` | Take Screenshot      | ⌘S                | Capture screen to Desktop          |
+| `supermac.menubar.action.status`     | Check Status         | ⌘C                | Show detailed status notification  |
+| `supermac.menubar.backend.status`    | Backend Status       | -                 | Shows connection status            |
+| `supermac.menubar.backend.reconnect` | Reconnect            | ⌘R                | Attempt backend reconnection       |
+| `supermac.menubar.slack.toggle`      | Notifications Toggle | ⌘N                | Enable/disable Slack notifications |
+| `supermac.menubar.app.quit`          | Quit                 | ⌘Q                | Exit the application               |
 
 ## Menu Structure
 

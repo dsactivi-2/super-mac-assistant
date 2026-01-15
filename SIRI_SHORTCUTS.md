@@ -52,6 +52,7 @@ Für Befehle an den ENGINEERING_LEAD_SUPERVISOR.
 ```
 
 **Aktivieren:**
+
 - Settings → Siri & Search → "Supervisor Command" aktivieren
 - Siri-Phrase: **"Hey Siri, Supervisor Command"**
 
@@ -95,6 +96,7 @@ Für Befehle an den CLOUD_ASSISTANT.
 ```
 
 **Aktivieren:**
+
 - Settings → Siri & Search → "Assistant Command" aktivieren
 - Siri-Phrase: **"Hey Siri, Assistant Command"**
 
@@ -135,6 +137,7 @@ Zeigt den Status des Systems.
 ```
 
 **Aktivieren:**
+
 - Settings → Siri & Search → "Agent Status" aktivieren
 - Siri-Phrase: **"Hey Siri, Agent Status"**
 
@@ -170,6 +173,7 @@ Macht einen Screenshot und benachrichtigt via Slack.
 ```
 
 **Aktivieren:**
+
 - Settings → Siri & Search → "Quick Screenshot" aktivieren
 - Siri-Phrase: **"Hey Siri, Quick Screenshot"**
 
@@ -220,6 +224,7 @@ Macht einen Screenshot und benachrichtigt via Slack.
 ### "Shortcuts konnte nicht ausgeführt werden"
 
 **Lösung:**
+
 1. Überprüfe Dateipfade in den Shell-Skripten
 2. Stelle sicher, dass venv aktiviert ist
 3. Teste das Python-Skript manuell:
@@ -232,6 +237,7 @@ Macht einen Screenshot und benachrichtigt via Slack.
 ### "Backend not available"
 
 **Lösung:**
+
 1. Starte Backend:
    ```bash
    cd ~/activi-dev-repos/Optimizecodecloudagents
@@ -245,6 +251,7 @@ Macht einen Screenshot und benachrichtigt via Slack.
 ### "Permission denied"
 
 **Lösung:**
+
 1. Settings → Privacy & Security → Automation
 2. Erlaube Shortcuts Zugriff auf Terminal
 3. Erlaube Shortcuts Zugriff auf Python
@@ -296,6 +303,7 @@ ssh user@mac-ip "cd ~/activi-dev-repos/super-mac-assistant && ..."
 Jetzt kannst du deinen Mac per Stimme steuern und mit den Cloud Agents kommunizieren! 🎉
 
 **Test:**
+
 - "Hey Siri, Agent Status"
 - "Hey Siri, Supervisor Command" → "Zeige mir den Status"
 - "Hey Siri, Quick Screenshot"

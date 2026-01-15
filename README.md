@@ -7,27 +7,32 @@
 ## 🌟 Features
 
 ### 🎤 Siri Integration
+
 - Sprachbefehle an Supervisor oder Assistant
 - "Hey Siri, Supervisor Command" → "Deploy backend"
 - Natürliche Sprache, keine CLI nötig
 
 ### 🤖 Dual Agent System
+
 - **ENGINEERING_LEAD_SUPERVISOR**: Plant, delegiert, verifiziert
 - **CLOUD_ASSISTANT**: Implementiert, testet, liefert
 
 ### 💻 Lokale Mac-Steuerung
+
 - Screenshots machen
 - Apps öffnen
 - Terminal Commands ausführen
 - Sleep Mode aktivieren
 
 ### 🔗 Backend Integration
+
 - WebSocket + REST API zu localhost:3000
 - Task Management
 - Chat mit 8 AI Agents
 - GitHub/Linear/Slack Integration
 
 ### 🔄 Autostart
+
 - LaunchAgent für Boot-Start
 - Läuft unsichtbar im Hintergrund
 - Menu Bar Icon für Kontrolle
@@ -51,6 +56,7 @@ chmod +x setup.sh
 ```
 
 Das Setup-Script:
+
 1. ✅ Erstellt Python venv
 2. ✅ Installiert Dependencies
 3. ✅ Testet Backend-Verbindung
@@ -136,12 +142,14 @@ Siehe: **[SIRI_SHORTCUTS.md](SIRI_SHORTCUTS.md)**
 **Rolle:** Strategische Planung, Delegation, Qualitätskontrolle
 
 **Capabilities:**
+
 - Strategische Planung
 - Task Delegation
 - Risk Assessment (STOP Score)
 - Evidence-Based Verification
 
 **Beispiel Commands:**
+
 ```bash
 "Erstelle einen Plan für Feature X"
 "Analysiere das Risiko dieser Änderung"
@@ -154,6 +162,7 @@ Siehe: **[SIRI_SHORTCUTS.md](SIRI_SHORTCUTS.md)**
 **Rolle:** Code-Implementierung, Testing, Execution
 
 **Capabilities:**
+
 - Code Implementation
 - Bug Fixing
 - Testing & Verification
@@ -161,6 +170,7 @@ Siehe: **[SIRI_SHORTCUTS.md](SIRI_SHORTCUTS.md)**
 - Documentation
 
 **Beispiel Commands:**
+
 ```bash
 "Implementiere die Login-Funktion"
 "Fixe den Bug in api/auth.ts"
@@ -251,6 +261,7 @@ print(agent.name)  # "ENGINEERING_LEAD_SUPERVISOR"
 Default: `http://localhost:3000`
 
 Ändern:
+
 ```python
 assistant = SuperMacAssistant(backend_url="http://your-server:3000")
 ```
@@ -258,6 +269,7 @@ assistant = SuperMacAssistant(backend_url="http://your-server:3000")
 ### Slack User ID
 
 In `src/core.py`:
+
 ```python
 self.user_id = "U0904E3AAR5"  # Deine Slack User ID
 ```
