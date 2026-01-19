@@ -4,12 +4,67 @@ Combines Backend API Client + Agent Identity + Local Mac Control
 """
 
 import os
+import re
 import subprocess
 from typing import Dict, Optional, List
 from datetime import datetime
 
+import sentry_sdk
+
 from src.api.backend_client import BackendAPIClient
 from src.agents.agent_identity import AgentManager, AgentType, AgentIdentity
+
+
+def scrub_sensitive_data(event, hint):
+    """Remove sensitive data before sending to Sentry."""
+    # Scrub extra context
+    if event.get("extra"):
+        sensitive_keys = ["password", "token", "api_key", "secret"]
+        for key in sensitive_keys:
+            if key in event["extra"]:
+                event["extra"][key] = "[REDACTED]"
+
+    # Scrub breadcrumbs
+    if event.get("breadcrumbs", {}).get("values"):
+        for crumb in event["breadcrumbs"]["values"]:
+            if crumb.get("data"):
+                for key in ["password", "token", "api_key"]:
+                    if key in crumb["data"]:
+                        crumb["data"][key] = "[REDACTED]"
+
+    return event
+
+
+# Initialize Sentry with full configuration
+if os.getenv("SENTRY_DSN"):
+    sentry_sdk.init(
+        dsn=os.getenv("SENTRY_DSN"),
+        environment=os.getenv("ENVIRONMENT", "development"),
+        release=os.getenv("SENTRY_RELEASE", "1.0.0"),
+        # Performance Monitoring
+        traces_sample_rate=1.0,
+        profiles_sample_rate=1.0,
+        # Distributed Tracing
+        trace_propagation_targets=[
+            "localhost",
+            r"https://.*\.activi\.dev",
+            r"http://178\.156\.178\.70",
+            r"http://49\.13\.158\.176",
+        ],
+        # User data
+        send_default_pii=True,
+        # Logs
+        _experiments={"enable_logs": True},
+        # Data Scrubbing
+        before_send=scrub_sensitive_data,
+        # Ignore common errors
+        ignore_errors=[
+            ConnectionResetError,
+            ConnectionRefusedError,
+            FileNotFoundError,
+        ],
+    )
+    print("✅ Sentry initialized with full monitoring")
 
 
 class SuperMacAssistant:

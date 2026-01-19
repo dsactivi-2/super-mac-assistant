@@ -4,3 +4,6 @@ anthropic>=0.25.0
 PyYAML>=6.0
 rumps>=0.4.0
 PyObjC>=10.0
+
+# Monitoring
+sentry-sdk>=2.19.2
